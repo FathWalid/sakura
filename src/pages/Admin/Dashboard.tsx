@@ -39,10 +39,18 @@ export function AdminDashboard() {
   return (
     <DashboardLayout onLogout={logout}>
       <h1 className="text-3xl font-semibold text-pink-600 mb-6">
-        🌸 Gestion des parfums
+        🌸 Gestion des Produits
       </h1>
-      <ProductForm onAdd={addProduct} />
-      <ProductTable products={products} onDelete={deleteProduct} />
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <ProductForm onAdd={addProduct} />
+        </div>
+
+        <div>
+          <ProductTable products={products} onDelete={deleteProduct} />
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

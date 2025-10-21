@@ -6,8 +6,8 @@ import User from "./models/User.js";
 dotenv.config();
 await connectDB();
 
-const username = "admin";
-const password = "123456";
+const username = "walid";
+const password = "Latefa@2024";
 
 // Supprime les anciens admins
 await User.deleteMany({ username });

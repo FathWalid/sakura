@@ -197,12 +197,6 @@ export function ProductDetails() {
               >
                 <ShoppingBag className="w-4 h-4" /> Ajouter au panier
               </button>
-              <button
-                onClick={handleWhatsApp}
-                className="bg-rose-powder text-teal-dark px-6 py-3 rounded-lg hover:bg-gold flex items-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4" /> WhatsApp
-              </button>
             </div>
 
             {/* Retour */}

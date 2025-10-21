@@ -1,19 +1,30 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export function AdminSidebar({ onLogout }: { onLogout: () => void }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const link = (path: string, label: string) => (
+    <button
+      onClick={() => navigate(path)}
+      className={`block w-full text-left px-3 py-2 rounded transition ${
+        location.pathname === path
+          ? "bg-white text-pink-600 font-semibold"
+          : "hover:bg-pink-700"
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <aside className="w-64 bg-pink-600 text-white p-6 flex flex-col justify-between">
       <div>
         <h2 className="text-2xl font-bold mb-6">🌸 Sakura Admin</h2>
-        <nav className="space-y-3">
-          <button
-            onClick={() => navigate("/admin/dashboard")}
-            className="block w-full text-left hover:text-gold transition"
-          >
-            Produits
-          </button>
+        <nav className="space-y-2">
+          {link("/admin/dashboard", "Tableau de bord")}
+          {link("/admin/products", "Produits")}
+          {link("/admin/orders", "Commandes")}
         </nav>
       </div>
       <button

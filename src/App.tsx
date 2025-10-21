@@ -12,12 +12,14 @@ import { Home } from "./pages/Home";
 import { Catalogue } from "./pages/Catalogue";
 import { Cart } from "./pages/Cart";
 import { Contact } from "./pages/Contact";
+import { ProductDetails } from "./pages/ProductDetail";
 
 // 🧑‍💼 Composants admin
 import { ProtectedRoute } from "./components/admin/ProtectedRoute";
-import { AdminDashboard } from "./pages/Admin/Dashboard";
 import { AdminLogin } from "./pages/Admin/Login";
-import { ProductDetails } from "./pages/ProductDetail";
+import { AdminDashboard } from "./pages/Admin/Dashboard"; // Produits
+import { AdminOrders } from "./pages/Admin/AdminOrders"; // Commandes
+import { AdminHome } from "./pages/Admin/AdminHome"; // Dashboard global
 
 function App() {
   return (
@@ -27,17 +29,26 @@ function App() {
         <CartProvider>
           {/* 🌸 Notifications globales */}
           <Toaster
-            position="top-right"
+            position="top-center"
             toastOptions={{
+              duration: 2500,
               style: {
-                background: "#fff",
-                color: "#333",
-                border: "1px solid #e0e0e0",
+                background: "#ffffff",
+                color: "#0f766e",
+                border: "1px solid #e5e7eb",
                 fontFamily: "Poppins, sans-serif",
+                fontWeight: "500",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
               },
               success: {
                 iconTheme: {
-                  primary: "#0f766e", // vert-bleu (teal-dark)
+                  primary: "#0f766e",
+                  secondary: "#fff",
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: "#b91c1c",
                   secondary: "#fff",
                 },
               },
@@ -91,11 +102,33 @@ function App() {
 
               {/* === 🧑‍💼 ADMINISTRATION === */}
               <Route path="/admin/login" element={<AdminLogin />} />
+
+              {/* Tableau de bord global (stats) */}
               <Route
                 path="/admin/dashboard"
                 element={
                   <ProtectedRoute>
+                    <AdminHome />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Produits */}
+              <Route
+                path="/admin/products"
+                element={
+                  <ProtectedRoute>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Commandes */}
+              <Route
+                path="/admin/orders"
+                element={
+                  <ProtectedRoute>
+                    <AdminOrders />
                   </ProtectedRoute>
                 }
               />

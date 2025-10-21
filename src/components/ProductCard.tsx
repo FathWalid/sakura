@@ -130,13 +130,6 @@ export function ProductCard({ product }: ProductCardProps) {
               <ShoppingBag className="w-4 h-4" />
               Ajouter
             </button>
-            <button
-              onClick={handleWhatsAppOrder}
-              className="bg-rose-powder text-teal-dark px-6 py-3 rounded-lg hover:bg-gold transition-colors duration-300 flex items-center justify-center gap-2 uppercase text-sm tracking-wider"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </button>
           </div>
         </div>
       </motion.div>
