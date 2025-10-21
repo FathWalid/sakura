@@ -1,8 +1,50 @@
-import { motion } from 'framer-motion';
-import { ProductGrid } from '../components/ProductGrid';
-import { products } from '../data/products';
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { ProductGrid } from "../components/ProductGrid";
+import { Product } from "../types/product";
 
 export function Catalogue() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const API = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${API}/api/products`);
+        if (!res.ok) throw new Error("Erreur lors du chargement des produits");
+        const data = await res.json();
+
+        // 🔹 Corrige les URL d’images et prix
+        const formatted = data.map((p: any) => {
+          const firstImage = p.images?.[0];
+          let imageUrl = "/default-parfum.jpg";
+
+          if (firstImage) {
+            if (firstImage.startsWith("http")) imageUrl = firstImage;
+            else if (firstImage.startsWith("/uploads")) imageUrl = `${API}${firstImage}`;
+            else imageUrl = `${API}/uploads/${firstImage}`;
+          }
+
+          return {
+            ...p,
+            image: imageUrl,
+            price: p.prices?.[0]?.amount || 0,
+          };
+        });
+
+        setProducts(formatted);
+      } catch (err: any) {
+        console.error("Erreur de chargement :", err);
+        setError("Impossible de charger les produits pour le moment.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   return (
     <div className="min-h-screen bg-cream pt-32 pb-16">
       <div className="container mx-auto px-6">
@@ -20,7 +62,17 @@ export function Catalogue() {
           </p>
         </motion.div>
 
-        <ProductGrid products={products} />
+        {loading ? (
+          <p className="text-center text-gray-500">Chargement des produits...</p>
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : products.length === 0 ? (
+          <p className="text-center text-gray-500">
+            Aucun produit disponible pour le moment.
+          </p>
+        ) : (
+          <ProductGrid products={products} />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { CartItem, Product } from '../types/product';
 
-const WHATSAPP_NUMBER = '212600000000';
+const WHATSAPP_NUMBER = '34742083046';
 
 export function createWhatsAppUrl(message: string): string {
   const encodedMessage = encodeURIComponent(message);

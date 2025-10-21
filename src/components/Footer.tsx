@@ -45,7 +45,7 @@ export function Footer() {
             </h4>
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/sakuraa.essence/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-rose-powder/10 hover:bg-rose-powder/20 rounded-lg transition-colors"
@@ -53,7 +53,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5 text-rose-powder" />
               </a>
               <a
-                href="https://wa.me/"
+                href="https://wa.me/34742083046/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-rose-powder/10 hover:bg-rose-powder/20 rounded-lg transition-colors"

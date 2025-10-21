@@ -1,0 +1,27 @@
+import { useNavigate } from "react-router-dom";
+
+export function AdminSidebar({ onLogout }: { onLogout: () => void }) {
+  const navigate = useNavigate();
+
+  return (
+    <aside className="w-64 bg-pink-600 text-white p-6 flex flex-col justify-between">
+      <div>
+        <h2 className="text-2xl font-bold mb-6">🌸 Sakura Admin</h2>
+        <nav className="space-y-3">
+          <button
+            onClick={() => navigate("/admin/dashboard")}
+            className="block w-full text-left hover:text-gold transition"
+          >
+            Produits
+          </button>
+        </nav>
+      </div>
+      <button
+        onClick={onLogout}
+        className="bg-white text-pink-600 px-4 py-2 rounded-lg font-semibold mt-8 hover:bg-gray-100 transition"
+      >
+        Déconnexion
+      </button>
+    </aside>
+  );
+}

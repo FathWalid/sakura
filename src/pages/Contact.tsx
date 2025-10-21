@@ -1,7 +1,47 @@
-import { motion } from 'framer-motion';
-import { Mail, MessageCircle, Instagram, MapPin, Phone } from 'lucide-react';
+import { motion } from "framer-motion";
+import { Mail, MessageCircle, Instagram, MapPin, Phone } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const API = import.meta.env.VITE_API_URL;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("💌 Message envoyé avec succès !");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        toast.error(data.message || "Erreur lors de l’envoi du message.");
+      }
+    } catch (error) {
+      toast.error("⚠️ Impossible d’envoyer le message pour le moment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-cream pt-32 pb-16">
       <div className="container mx-auto px-6 max-w-6xl">
@@ -19,6 +59,7 @@ export function Contact() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* 🌸 Infos de contact */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -26,142 +67,66 @@ export function Contact() {
             className="space-y-8"
           >
             <div className="bg-white rounded-lg p-8 shadow-md">
-              <h2 className="text-3xl font-serif text-teal-dark mb-8">Informations de Contact</h2>
+              <h2 className="text-3xl font-serif text-teal-dark mb-8">
+                Informations de Contact
+              </h2>
 
               <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-rose-powder rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-6 h-6 text-teal-dark" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-teal-dark mb-1">WhatsApp</h3>
-                    <a
-                      href="https://wa.me/212600000000"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-text-gray hover:text-rose-powder transition-colors"
-                    >
-                      +34 742 08 30 46
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-rose-powder rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-teal-dark" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-teal-dark mb-1">Email</h3>
-                    <a
-                      href="mailto:contact@sakura-parfums.com"
-                      className="text-text-gray hover:text-rose-powder transition-colors"
-                    >
-                      contact@sakuraessence.com
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-rose-powder rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Instagram className="w-6 h-6 text-teal-dark" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-teal-dark mb-1">Instagram</h3>
-                    <a
-                      href="https://instagram.com/sakuraa.essence"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-text-gray hover:text-rose-powder transition-colors"
-                    >
-                      @sakuraa.essence
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-rose-powder rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-teal-dark" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-teal-dark mb-1">Adresse</h3>
-                    <p className="text-text-gray">
-                      Rabat, Maroc
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-rose-powder rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-teal-dark" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-teal-dark mb-1">Téléphone</h3>
-                    <a
-                      href="tel:+212600000000"
-                      className="text-text-gray hover:text-rose-powder transition-colors"
-                    >
-                      +212 6 63 12 51 22
-                    </a>
-                  </div>
-                </div>
+                <ContactItem icon={<MessageCircle />} title="WhatsApp" value="+34 742 08 30 46" link="https://wa.me/34742083046" />
+                <ContactItem icon={<Mail />} title="Email" value="contact@sakuraessence.com" link="mailto:contact@sakuraessence.com" />
+                <ContactItem icon={<Instagram />} title="Instagram" value="@sakuraa.essence" link="https://instagram.com/sakuraa.essence" />
+                <ContactItem icon={<MapPin />} title="Adresse" value="Rabat, Maroc" />
+                <ContactItem icon={<Phone />} title="Téléphone" value="+212 6 63 12 51 22" link="tel:+212663125122" />
               </div>
             </div>
 
             <div className="bg-teal-dark rounded-lg p-8">
               <h3 className="text-2xl font-serif text-rose-powder mb-4">Horaires d'ouverture</h3>
-              <div className="space-y-2 text-cream">
-                <div className="flex justify-between">
-                  <span>Lundi - Dimanche</span>
-                  <span>9h00 - 20h00</span>
-                </div>
+              <div className="flex justify-between text-cream">
+                <span>Lundi - Dimanche</span>
+                <span>9h00 - 20h00</span>
               </div>
             </div>
           </motion.div>
 
+          {/* 🌸 Formulaire */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
             className="bg-white rounded-lg p-8 shadow-md"
           >
-            <h2 className="text-3xl font-serif text-teal-dark mb-8">Envoyez-nous un Message</h2>
+            <h2 className="text-3xl font-serif text-teal-dark mb-8">
+              Envoyez-nous un Message
+            </h2>
 
-            <form className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-teal-dark font-semibold mb-2">
-                  Nom complet
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="w-full px-4 py-3 rounded-lg border border-teal-dark/20 focus:border-rose-powder focus:ring-2 focus:ring-rose-powder/20 outline-none transition-colors"
-                  placeholder="Votre nom"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-teal-dark font-semibold mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full px-4 py-3 rounded-lg border border-teal-dark/20 focus:border-rose-powder focus:ring-2 focus:ring-rose-powder/20 outline-none transition-colors"
-                  placeholder="votre@email.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="subject" className="block text-teal-dark font-semibold mb-2">
-                  Sujet
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  className="w-full px-4 py-3 rounded-lg border border-teal-dark/20 focus:border-rose-powder focus:ring-2 focus:ring-rose-powder/20 outline-none transition-colors"
-                  placeholder="Sujet de votre message"
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {["name", "email", "subject"].map((field) => (
+                <div key={field}>
+                  <label htmlFor={field} className="block text-teal-dark font-semibold mb-2">
+                    {field === "name"
+                      ? "Nom complet"
+                      : field === "email"
+                      ? "Email"
+                      : "Sujet"}
+                  </label>
+                  <input
+                    id={field}
+                    type={field === "email" ? "email" : "text"}
+                    value={(formData as any)[field]}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-teal-dark/20 focus:border-rose-powder focus:ring-2 focus:ring-rose-powder/20 outline-none transition-colors"
+                    placeholder={
+                      field === "name"
+                        ? "Votre nom"
+                        : field === "email"
+                        ? "votre@email.com"
+                        : "Sujet de votre message"
+                    }
+                  />
+                </div>
+              ))}
 
               <div>
                 <label htmlFor="message" className="block text-teal-dark font-semibold mb-2">
@@ -170,6 +135,9 @@ export function Contact() {
                 <textarea
                   id="message"
                   rows={6}
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
                   className="w-full px-4 py-3 rounded-lg border border-teal-dark/20 focus:border-rose-powder focus:ring-2 focus:ring-rose-powder/20 outline-none transition-colors resize-none"
                   placeholder="Votre message..."
                 ></textarea>
@@ -177,13 +145,35 @@ export function Contact() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-teal-dark text-cream px-6 py-4 rounded-lg hover:bg-teal-medium transition-colors duration-300 uppercase text-sm tracking-wider font-semibold"
               >
-                Envoyer le Message
+                {loading ? "Envoi en cours..." : "Envoyer le Message"}
               </button>
             </form>
           </motion.div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ Petit composant pour les items de contact
+function ContactItem({ icon, title, value, link }: any) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="w-12 h-12 bg-rose-powder rounded-lg flex items-center justify-center flex-shrink-0">
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-teal-dark mb-1">{title}</h3>
+        {link ? (
+          <a href={link} target="_blank" rel="noopener noreferrer" className="text-text-gray hover:text-rose-powder transition-colors">
+            {value}
+          </a>
+        ) : (
+          <p className="text-text-gray">{value}</p>
+        )}
       </div>
     </div>
   );

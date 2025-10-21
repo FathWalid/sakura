@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
-import { Trash2, MessageCircle, ShoppingBag } from 'lucide-react';
-import { useCart } from '../context/CartContext';
-import { createWhatsAppUrl, createCartMessage } from '../utils/whatsapp';
-import { Link } from 'react-router-dom';
+import { motion } from "framer-motion";
+import { Trash2, MessageCircle, ShoppingBag } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { createWhatsAppUrl, createCartMessage } from "../utils/whatsapp";
+import { Link } from "react-router-dom";
 
 export function Cart() {
   const { cart, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
@@ -10,9 +10,10 @@ export function Cart() {
   const handleCheckout = () => {
     const message = createCartMessage(cart);
     const url = createWhatsAppUrl(message);
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
+  // 🧺 Cas où le panier est vide
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-cream pt-32 pb-16">
@@ -39,6 +40,7 @@ export function Cart() {
     );
   }
 
+  // 🧴 Panier rempli
   return (
     <div className="min-h-screen bg-cream pt-32 pb-16">
       <div className="container mx-auto px-6 max-w-5xl">
@@ -51,48 +53,67 @@ export function Cart() {
         </motion.h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 🧾 Liste des articles */}
           <div className="lg:col-span-2 space-y-6">
             {cart.map((item, index) => (
               <motion.div
-                key={item.id}
+                key={`${item._id}-${item.selectedVolume}`} // ✅ clé unique pour volume
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="bg-white rounded-lg p-6 shadow-md flex gap-6"
               >
                 <img
-                  src={item.image}
+                  src={
+                    item.image?.startsWith("http")
+                      ? item.image
+                      : `${import.meta.env.VITE_API_URL}${item.image}`
+                  }
                   alt={item.name}
                   className="w-32 h-32 object-cover rounded-lg"
                 />
 
                 <div className="flex-1">
-                  <h3 className="text-2xl font-serif text-teal-dark mb-2">{item.name}</h3>
+                  <h3 className="text-2xl font-serif text-teal-dark mb-1">
+                    {item.name}
+                  </h3>
+                  <p className="text-sm text-text-gray mb-2">
+                    <span className="font-semibold">Volume :</span>{" "}
+                    {item.selectedVolume} ml
+                  </p>
                   <p className="text-text-gray text-sm mb-4">{item.notes}</p>
 
                   <div className="flex items-center justify-between">
+                    {/* ➕➖ quantité */}
                     <div className="flex items-center gap-4">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item._id, item.selectedVolume, item.quantity - 1)
+                        }
                         className="w-8 h-8 bg-teal-dark/10 hover:bg-teal-dark/20 rounded flex items-center justify-center text-teal-dark font-bold transition-colors"
                       >
                         -
                       </button>
-                      <span className="text-lg font-semibold text-teal-dark">{item.quantity}</span>
+                      <span className="text-lg font-semibold text-teal-dark">
+                        {item.quantity}
+                      </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item._id, item.selectedVolume, item.quantity + 1)
+                        }
                         className="w-8 h-8 bg-teal-dark/10 hover:bg-teal-dark/20 rounded flex items-center justify-center text-teal-dark font-bold transition-colors"
                       >
                         +
                       </button>
                     </div>
 
+                    {/* 💰 prix et suppression */}
                     <div className="flex items-center gap-4">
                       <span className="text-2xl font-serif text-teal-dark font-bold">
-                        {item.price * item.quantity}€
+                        {item.price * item.quantity} MAD
                       </span>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item._id, item.selectedVolume)}
                         className="p-2 text-rose-powder hover:bg-rose-powder/10 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -104,6 +125,7 @@ export function Cart() {
             ))}
           </div>
 
+          {/* 🧮 Récapitulatif */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -114,7 +136,7 @@ export function Cart() {
             <div className="space-y-4 mb-6">
               <div className="flex justify-between text-text-gray">
                 <span>Sous-total</span>
-                <span>{totalPrice}€</span>
+                <span>{totalPrice} MAD</span>
               </div>
               <div className="flex justify-between text-text-gray">
                 <span>Livraison</span>
@@ -122,7 +144,7 @@ export function Cart() {
               </div>
               <div className="border-t border-teal-dark/10 pt-4 flex justify-between text-2xl font-serif text-teal-dark font-bold">
                 <span>Total</span>
-                <span>{totalPrice}€</span>
+                <span>{totalPrice} MAD</span>
               </div>
             </div>
 
