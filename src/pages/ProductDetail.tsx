@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingBag, MessageCircle, ArrowLeft } from "lucide-react";
+import { ShoppingBag, ArrowLeft } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { createWhatsAppUrl } from "../utils/whatsapp";
 import { Header } from "../components/Header";
@@ -10,25 +10,34 @@ import toast, { Toaster } from "react-hot-toast";
 
 export function ProductDetails() {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
-  const [selectedVolume, setSelectedVolume] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | number | null>(null);
   const [price, setPrice] = useState<number>(0);
+  const [typeLabel, setTypeLabel] = useState("Volume");
 
-  // 🔹 Charger le produit depuis l’API
+  // 🔍 Déterminer la collection (Sakura, Zara, Rituals)
+  let collection = "products";
+  if (location.pathname.includes("zara")) collection = "zara-products";
+  if (location.pathname.includes("rituals")) collection = "rituals-products";
+
+  // 🔹 Charger le produit depuis le bon endpoint
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${API}/api/products/${id}`);
+        const res = await fetch(`${API}/api/${collection}/${id}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.message || "Erreur serveur");
 
         setProduct(data);
+
+        // ✅ première image sélectionnée
         const mainImg = data.images?.[0];
         const imageUrl =
           mainImg?.startsWith("http") || mainImg?.startsWith("/uploads")
@@ -36,9 +45,17 @@ export function ProductDetails() {
             : mainImg;
         setSelectedImage(imageUrl);
 
+        // ✅ détecte type de prix (ml ou taille)
         if (data.prices && data.prices.length > 0) {
-          setSelectedVolume(data.prices[0].volume);
-          setPrice(data.prices[0].amount);
+          const firstPrice = data.prices[0];
+          if (firstPrice.volume) {
+            setSelectedOption(firstPrice.volume);
+            setTypeLabel("Volume");
+          } else if (firstPrice.size) {
+            setSelectedOption(firstPrice.size);
+            setTypeLabel("Taille");
+          }
+          setPrice(firstPrice.amount);
         }
       } catch (err) {
         console.error("Erreur chargement produit:", err);
@@ -60,7 +77,7 @@ export function ProductDetails() {
     );
   }
 
-  // 🌸 Notification minimaliste sous le header
+  // 🌸 Notification visuelle sous le header
   const showToast = () => {
     toast.custom(
       (t) => (
@@ -79,23 +96,23 @@ export function ProductDetails() {
       ),
       {
         duration: 2000,
-        position: "top-center", // 👈 juste sous le header
+        position: "top-center",
       }
     );
   };
 
-  // 🔹 Changement du volume sélectionné
-  const handleVolumeChange = (vol: number, amount: number) => {
-    setSelectedVolume(vol);
+  // 🔹 Changement du volume ou taille
+  const handleOptionChange = (option: string | number, amount: number) => {
+    setSelectedOption(option);
     setPrice(amount);
   };
 
-  // 🔹 Ajouter au panier + notification
+  // 🔹 Ajouter au panier
   const handleAddToCart = () => {
     addToCart({
       ...product,
       price,
-      selectedVolume,
+      selectedOption,
       image:
         product.images?.[0]?.startsWith("http") || product.images?.[0]?.startsWith("/uploads")
           ? `${API}${product.images[0]}`
@@ -106,14 +123,13 @@ export function ProductDetails() {
 
   // 🔹 Commander via WhatsApp
   const handleWhatsApp = () => {
-    const msg = `Bonjour 🌸 Je suis intéressé par *${product.name}* (${selectedVolume}ml) à ${price} MAD.`;
+    const msg = `Bonjour 🌸 Je suis intéressé par *${product.name}* (${typeLabel}: ${selectedOption}) à ${price} MAD.`;
     window.open(createWhatsAppUrl(msg), "_blank");
   };
 
   return (
     <>
       <Header />
-      {/* 🔔 Toaster global (notifications sous le header) */}
       <Toaster position="top-center" reverseOrder={false} />
 
       <div className="min-h-screen bg-cream pt-32 pb-16">
@@ -142,7 +158,9 @@ export function ProductDetails() {
                     src={imgUrl}
                     onClick={() => setSelectedImage(imgUrl)}
                     className={`w-20 h-20 object-cover rounded-xl cursor-pointer border-2 ${
-                      selectedImage === imgUrl ? "border-pink-500" : "border-transparent"
+                      selectedImage === imgUrl
+                        ? "border-pink-500"
+                        : "border-transparent"
                     }`}
                   />
                 );
@@ -157,7 +175,9 @@ export function ProductDetails() {
             transition={{ duration: 0.6 }}
             className="flex-1"
           >
-            <h1 className="text-5xl font-serif text-teal-dark mb-4">{product.name}</h1>
+            <h1 className="text-5xl font-serif text-teal-dark mb-4">
+              {product.name}
+            </h1>
             <p className="text-lg text-text-gray mb-4">{product.description}</p>
             <p className="text-gray-700 mb-2">
               <span className="font-semibold">Type :</span> {product.type}
@@ -166,22 +186,27 @@ export function ProductDetails() {
               <span className="font-semibold">Genre :</span> {product.notes}
             </p>
 
-            {/* Sélection du volume */}
-            <h3 className="text-lg font-semibold mb-2">Volumes disponibles :</h3>
+            {/* Sélection volume ou taille */}
+            <h3 className="text-lg font-semibold mb-2">
+              {typeLabel}s disponibles :
+            </h3>
             <div className="flex flex-wrap gap-3 mb-6">
-              {product.prices.map((p: any) => (
-                <button
-                  key={p.volume}
-                  onClick={() => handleVolumeChange(p.volume, p.amount)}
-                  className={`px-5 py-2 rounded-full border transition ${
-                    selectedVolume === p.volume
-                      ? "bg-pink-600 text-white border-pink-600"
-                      : "border-pink-400 text-pink-600 hover:bg-pink-100"
-                  }`}
-                >
-                  {p.volume} ml
-                </button>
-              ))}
+              {product.prices.map((p: any, i: number) => {
+                const label = p.volume || p.size;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleOptionChange(label, p.amount)}
+                    className={`px-5 py-2 rounded-full border transition ${
+                      selectedOption === label
+                        ? "bg-pink-600 text-white border-pink-600"
+                        : "border-pink-400 text-pink-600 hover:bg-pink-100"
+                    }`}
+                  >
+                    {p.volume ? `${p.volume} ml` : p.size}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Prix affiché */}
@@ -190,12 +215,18 @@ export function ProductDetails() {
             </div>
 
             {/* Boutons d’action */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex flex-wrap gap-4 mb-6">
               <button
                 onClick={handleAddToCart}
                 className="flex-1 bg-teal-dark text-cream py-3 rounded-lg hover:bg-teal-medium flex items-center justify-center gap-2"
               >
                 <ShoppingBag className="w-4 h-4" /> Ajouter au panier
+              </button>
+              <button
+                onClick={handleWhatsApp}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg flex items-center justify-center gap-2"
+              >
+                💬 Commander via WhatsApp
               </button>
             </div>
 

@@ -10,6 +10,7 @@ const orderItemSchema = new mongoose.Schema({
   volume: Number,
   quantity: Number,
   price: Number,
+  brand: { type: String, default: "Sakura" }, // 🌸 marque détectée automatiquement
 });
 
 const orderSchema = new mongoose.Schema(

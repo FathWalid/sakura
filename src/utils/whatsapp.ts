@@ -1,6 +1,6 @@
 import { CartItem } from "../types/product";
 
-const WHATSAPP_NUMBER = "34742083046"; // ton vrai numéro WhatsApp
+const WHATSAPP_NUMBER = "34742083046"; // ✅ Ton numéro WhatsApp sans + ni espaces
 
 export function createWhatsAppUrl(message: string): string {
   const encodedMessage = encodeURIComponent(message);
@@ -24,6 +24,6 @@ export function createCartMessage(
 
   message += `👤 *Nom :* ${name || "—"}\n📧 *Email :* ${email || "—"}\n📱 *Téléphone :* ${phone || "—"}\n`;
 
-  message += `\n💖`;
+  message += `\n💖 Merci !`;
   return message;
 }

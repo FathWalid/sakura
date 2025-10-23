@@ -1,30 +1,31 @@
-// src/types/product.ts
-
-// 💰 Prix et volumes disponibles pour chaque parfum
+// 💰 Prix d’un produit
 export interface ProductPrice {
-  volume: number;
-  amount: number;
+  volume?: number;  // pour Sakura / Zara
+  size?: string;    // pour Rituals
+  amount: number;   // prix (MAD)
 }
 
 // 🧴 Modèle principal du produit
 export interface Product {
-  _id: string; // ID MongoDB
+  _id: string;
   name: string;
-  description: string;
-  type: string;
-  notes: string;
-  images: string[]; // tableau d’images (ex: /uploads/img1.png)
-  prices: ProductPrice[]; // liste des volumes + prix
+  description?: string;
+  type?: string;
+  notes?: string;
+  images?: string[];
+  prices?: ProductPrice[];
+  image?: string;   // image principale formatée
+  price?: number;   // prix affiché simplifié
 }
 
-// 🛒 Modèle d’un article du panier
+// 🛒 Article du panier
 export interface CartItem {
-  _id: string;          // même ID que le produit
+  _id: string;
   name: string;
-  type: string;
-  notes: string;
-  image: string;        // image affichée dans le panier
-  selectedVolume: number; // volume choisi (ml)
-  price: number;        // prix correspondant
-  quantity: number;     // nombre d’articles
+  type?: string;
+  notes?: string;
+  image: string;
+  selectedOption?: string | number; // volume (ml) ou taille (S/M/L)
+  price: number;
+  quantity: number;
 }

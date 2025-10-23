@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { ShoppingBag, MessageCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ShoppingBag } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Product } from "../types/product";
 import { useCart } from "../context/CartContext";
 import { createWhatsAppUrl } from "../utils/whatsapp";
@@ -13,11 +13,20 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const navigate = useNavigate();
-
-  const mainPrice = product.prices?.[0]?.amount || 0;
-  const mainVolume = product.prices?.[0]?.volume || 50;
-
+  const location = useLocation();
   const API = import.meta.env.VITE_API_URL;
+
+  // 🪷 Déterminer la collection actuelle
+  let collectionPrefix = "/produit";
+  if (location.pathname.includes("zara")) collectionPrefix = "/zara-produits";
+  if (location.pathname.includes("rituals")) collectionPrefix = "/rituals-produits";
+
+  // 💰 Déterminer le premier prix
+  const firstPrice = product.prices?.[0];
+  const mainPrice = firstPrice?.amount || 0;
+  const mainOption = firstPrice?.volume || firstPrice?.size || "";
+
+  // 🖼️ Image du produit
   const imageUrl =
     product.images?.[0]
       ? product.images[0].startsWith("http")
@@ -25,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
         : `${API}${product.images[0]}`
       : "/default-parfum.jpg";
 
-  // 🔹 Notification élégante & minimaliste
+  // 🔔 Toast minimaliste
   const showToast = () => {
     toast.custom(
       (t) => (
@@ -44,45 +53,42 @@ export function ProductCard({ product }: ProductCardProps) {
       ),
       {
         duration: 2000,
-        position: "top-center", // 🔸 s'affiche sous le header
+        position: "top-center",
       }
     );
   };
 
-  // ➕ Ajouter au panier + notification
+  // ➕ Ajouter au panier
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-
     addToCart({
       _id: product._id,
       name: product.name,
       type: product.type,
       notes: product.notes,
       image: imageUrl,
-      selectedVolume: mainVolume,
+      selectedOption: mainOption,
       price: mainPrice,
       quantity: 1,
     });
-
     showToast();
+  };
+
+  // 🔍 Ouvrir la page détail
+  const handleOpenDetail = () => {
+    navigate(`${collectionPrefix}/${product._id}`);
   };
 
   // 💬 Commander sur WhatsApp
   const handleWhatsAppOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const msg = `Bonjour 🌸 Je suis intéressé par le parfum *${product.name}* (${mainVolume}ml) à ${mainPrice} MAD.`;
+    const msg = `Bonjour 🌸 Je suis intéressé par *${product.name}* (${mainOption}) à ${mainPrice} MAD.`;
     const url = createWhatsAppUrl(msg);
     window.open(url, "_blank");
   };
 
-  // 🔍 Ouvrir la page détail
-  const handleOpenDetail = () => {
-    navigate(`/produit/${product._id}`);
-  };
-
   return (
     <>
-      {/* 🔔 Toaster global (placé ici pour catalogue & détail) */}
       <Toaster position="top-center" reverseOrder={false} />
 
       <motion.div
@@ -91,44 +97,62 @@ export function ProductCard({ product }: ProductCardProps) {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
         onClick={handleOpenDetail}
-        className="bg-cream rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
+        className="bg-cream rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer group"
       >
-        {/* IMAGE */}
+        {/* 🖼️ Image */}
         <div className="relative h-72 overflow-hidden">
           <img
             src={imageUrl}
             alt={product.name}
             onError={(e) => (e.currentTarget.src = "/default-parfum.jpg")}
-            className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div className="absolute top-4 right-4 bg-gold text-teal-dark text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-            {product.type}
-          </div>
+          {product.type && (
+            <div className="absolute top-4 right-4 bg-gold text-teal-dark text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              {product.type}
+            </div>
+          )}
         </div>
 
-        {/* CONTENU */}
-        <div className="p-6">
-          <h3 className="text-2xl font-serif text-teal-dark mb-2">{product.name}</h3>
-          <p className="text-sm text-text-gray mb-2">
-            <span className="font-semibold">Genre :</span> {product.notes || "—"}
-          </p>
-          <p className="text-sm text-text-gray mb-4">
-            <span className="font-semibold">Volume :</span> {mainVolume} ml
-          </p>
+        {/* 🧴 Infos */}
+        <div className="p-5 text-center">
+          <h3 className="text-xl font-serif text-teal-dark group-hover:text-pink-600 transition-colors mb-1">
+            {product.name}
+          </h3>
+          {product.notes && (
+            <p className="text-gray-500 text-sm mb-1">
+              <span className="font-semibold">Genre :</span> {product.notes}
+            </p>
+          )}
 
-          <span className="text-3xl font-serif text-teal-dark font-bold block mb-4">
+          {mainOption && (
+            <p className="text-gray-500 text-sm mb-3">
+              <span className="font-semibold">
+                {firstPrice?.volume ? "Volume" : "Taille"} :
+              </span>{" "}
+              {mainOption}
+              {firstPrice?.volume ? " ml" : ""}
+            </p>
+          )}
+
+          <p className="text-2xl font-serif text-pink-600 font-bold mb-4">
             {mainPrice} MAD
-          </span>
+          </p>
 
-          {/* BOUTONS */}
-          <div className="flex gap-3">
+          {/* Boutons */}
+          <div className="flex gap-3 justify-center">
             <button
               onClick={handleAddToCart}
-              className="flex-1 bg-teal-dark text-cream px-6 py-3 rounded-lg hover:bg-teal-medium transition-colors duration-300 flex items-center justify-center gap-2 uppercase text-sm tracking-wider"
+              className="bg-teal-dark text-cream px-5 py-2 rounded-lg hover:bg-teal-medium flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition"
             >
-              <ShoppingBag className="w-4 h-4" />
-              Ajouter
+              <ShoppingBag className="w-4 h-4" /> Ajouter
+            </button>
+
+            <button
+              onClick={handleWhatsAppOrder}
+              className="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 transition text-sm uppercase tracking-wider"
+            >
+              💬 WhatsApp
             </button>
           </div>
         </div>

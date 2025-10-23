@@ -26,38 +26,49 @@ const upload = multer({
   },
 });
 
-// === 📦 RÉCUPÉRER TOUS LES PRODUITS ===
+// ================================
+// 📦 RÉCUPÉRER TOUS LES PRODUITS (avec option ?limit)
+// ================================
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const limit = parseInt(req.query.limit) || 0;
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .limit(limit);
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors du chargement des produits" });
   }
 });
 
-// === 📦 RÉCUPÉRER UN PRODUIT PAR ID ===
+// ================================
+// 📦 RÉCUPÉRER UN PRODUIT PAR ID
+// ================================
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Produit introuvable" });
+    if (!product)
+      return res.status(404).json({ message: "Produit introuvable" });
     res.json(product);
   } catch {
-    res.status(500).json({ message: "Erreur lors de la récupération du produit" });
+    res.status(500).json({
+      message: "Erreur lors de la récupération du produit",
+    });
   }
 });
 
-// === ➕ AJOUTER UN PRODUIT (ADMIN) ===
+// ================================
+// ➕ AJOUTER UN PRODUIT (ADMIN)
+// ================================
 router.post("/", protect, upload.array("images", 8), async (req, res) => {
   try {
     const { name, description, type, notes, prices } = req.body;
 
-    // Validation
-    if (!name || !prices) return res.status(400).json({ message: "Champs manquants" });
+    if (!name || !prices)
+      return res.status(400).json({ message: "Champs manquants" });
 
-    const parsedPrices = JSON.parse(prices); // [{volume: 50, amount: 200}, ...]
-
-    const imagePaths = req.files.map((f) => `/uploads/${f.filename}`);
+    const parsedPrices = JSON.parse(prices);
+    const imagePaths = req.files?.map((f) => `/uploads/${f.filename}`) || [];
 
     const newProduct = await Product.create({
       name,
@@ -71,44 +82,67 @@ router.post("/", protect, upload.array("images", 8), async (req, res) => {
     res.status(201).json(newProduct);
   } catch (error) {
     console.error("❌ Erreur ajout produit :", error);
-    res.status(500).json({ message: "Erreur lors de l’ajout du produit", error: error.message });
+    res.status(500).json({
+      message: "Erreur lors de l’ajout du produit",
+      error: error.message,
+    });
   }
 });
 
-// === ✏️ MODIFIER PRODUIT ===
+// ================================
+// ✏️ MODIFIER PRODUIT
+// ================================
 router.put("/:id", protect, upload.array("images", 8), async (req, res) => {
   try {
     const { name, description, type, notes, prices } = req.body;
     const parsedPrices = prices ? JSON.parse(prices) : [];
 
-    const updatedFields = { name, description, type, notes, prices: parsedPrices };
+    const updatedFields = {
+      name,
+      description,
+      type,
+      notes,
+      prices: parsedPrices,
+    };
 
-    if (req.files.length > 0) {
+    if (req.files && req.files.length > 0) {
       updatedFields.images = req.files.map((f) => `/uploads/${f.filename}`);
     }
 
-    const updated = await Product.findByIdAndUpdate(req.params.id, updatedFields, { new: true });
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      updatedFields,
+      { new: true }
+    );
+
     res.json(updated);
   } catch (error) {
+    console.error("Erreur de mise à jour produit :", error);
     res.status(500).json({ message: "Erreur de mise à jour du produit" });
   }
 });
 
-// === ❌ SUPPRIMER PRODUIT ===
+// ================================
+// ❌ SUPPRIMER PRODUIT
+// ================================
 router.delete("/:id", protect, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Produit introuvable" });
+    if (!product)
+      return res.status(404).json({ message: "Produit introuvable" });
 
-    // Supprimer les fichiers images
-    product.images.forEach((img) => {
-      const filePath = path.join(process.cwd(), img);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    });
+    // Supprimer les fichiers images associés
+    if (product.images && product.images.length > 0) {
+      product.images.forEach((img) => {
+        const filePath = path.join(process.cwd(), img);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      });
+    }
 
     await product.deleteOne();
-    res.json({ message: "Produit supprimé avec succès" });
+    res.json({ message: "Produit supprimé avec succès ✅" });
   } catch (error) {
+    console.error("Erreur suppression produit :", error);
     res.status(500).json({ message: "Erreur suppression produit" });
   }
 });

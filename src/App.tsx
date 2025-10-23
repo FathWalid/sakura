@@ -1,15 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { useContext } from "react";
 
 // 🌸 Contexts
 import { CartProvider } from "./context/CartContext";
 import { AdminAuthProvider } from "./context/AdminAuthContext";
+import { AdminAuthContext } from "./context/AdminAuthContext";
 
 // 🌸 Composants publics
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Home } from "./pages/Home";
 import { Catalogue } from "./pages/Catalogue";
+import { CatalogueSakura } from "./pages/CatalogueSakura";
+import { CatalogueZara } from "./pages/CatalogueZara";
+import { CatalogueRituals } from "./pages/CatalogueRituals";
 import { Cart } from "./pages/Cart";
 import { Contact } from "./pages/Contact";
 import { ProductDetails } from "./pages/ProductDetail";
@@ -17,17 +22,27 @@ import { ProductDetails } from "./pages/ProductDetail";
 // 🧑‍💼 Composants admin
 import { ProtectedRoute } from "./components/admin/ProtectedRoute";
 import { AdminLogin } from "./pages/Admin/Login";
-import { AdminDashboard } from "./pages/Admin/Dashboard"; // Produits
-import { AdminOrders } from "./pages/Admin/AdminOrders"; // Commandes
-import { AdminHome } from "./pages/Admin/AdminHome"; // Dashboard global
+import { AdminDashboard } from "./pages/Admin/Dashboard";
+import { AdminOrders } from "./pages/Admin/AdminOrders";
+import { AdminHome } from "./pages/Admin/AdminHome";
+import { AdminZara } from "./pages/Admin/AdminZara";
+import { AdminRituals } from "./pages/Admin/AdminRituals";
+
+// ✅ Redirection de la racine admin selon connexion
+function AdminRoot() {
+  const { token } = useContext(AdminAuthContext);
+  return token ? (
+    <Navigate to="/admin/dashboard" replace />
+  ) : (
+    <Navigate to="/admin/login" replace />
+  );
+}
 
 function App() {
   return (
     <Router>
-      {/* 🌸 Fournisseurs de contexte global : Admin + Panier */}
       <AdminAuthProvider>
         <CartProvider>
-          {/* 🌸 Notifications globales */}
           <Toaster
             position="top-center"
             toastOptions={{
@@ -40,18 +55,8 @@ function App() {
                 fontWeight: "500",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
               },
-              success: {
-                iconTheme: {
-                  primary: "#0f766e",
-                  secondary: "#fff",
-                },
-              },
-              error: {
-                iconTheme: {
-                  primary: "#b91c1c",
-                  secondary: "#fff",
-                },
-              },
+              success: { iconTheme: { primary: "#0f766e", secondary: "#fff" } },
+              error: { iconTheme: { primary: "#b91c1c", secondary: "#fff" } },
             }}
           />
 
@@ -79,6 +84,36 @@ function App() {
                 }
               />
               <Route
+                path="/catalogue-sakura"
+                element={
+                  <>
+                    <Header />
+                    <CatalogueSakura />
+                    <Footer />
+                  </>
+                }
+              />
+              <Route
+                path="/catalogue-zara"
+                element={
+                  <>
+                    <Header />
+                    <CatalogueZara />
+                    <Footer />
+                  </>
+                }
+              />
+              <Route
+                path="/catalogue-rituals"
+                element={
+                  <>
+                    <Header />
+                    <CatalogueRituals />
+                    <Footer />
+                  </>
+                }
+              />
+              <Route
                 path="/panier"
                 element={
                   <>
@@ -99,11 +134,12 @@ function App() {
                 }
               />
               <Route path="/produit/:id" element={<ProductDetails />} />
+              <Route path="/zara-produits/:id" element={<ProductDetails />} />
+              <Route path="/rituals-produits/:id" element={<ProductDetails />} />
 
-              {/* === 🧑‍💼 ADMINISTRATION === */}
+              {/* === 🧑‍💼 ADMIN === */}
+              <Route path="/admin" element={<AdminRoot />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-
-              {/* Tableau de bord global (stats) */}
               <Route
                 path="/admin/dashboard"
                 element={
@@ -112,8 +148,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-              {/* Produits */}
               <Route
                 path="/admin/products"
                 element={
@@ -122,8 +156,22 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-              {/* Commandes */}
+              <Route
+                path="/admin/zara"
+                element={
+                  <ProtectedRoute>
+                    <AdminZara />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/rituals"
+                element={
+                  <ProtectedRoute>
+                    <AdminRituals />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/orders"
                 element={

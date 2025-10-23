@@ -2,32 +2,49 @@ import { motion } from "framer-motion";
 import { Trash2, MessageCircle, ShoppingBag } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { createWhatsAppUrl, createCartMessage } from "../utils/whatsapp";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // ✅ Ajout de useLocation
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 export function Cart() {
   const { cart, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
 
-  // Champs du client
   const [customer, setCustomer] = useState({
     name: "",
     email: "",
     phone: "",
   });
 
+  const [errors, setErrors] = useState({
+    name: false,
+    email: false,
+    phone: false,
+  });
+
   const API = import.meta.env.VITE_API_URL;
+  const location = useLocation(); // ✅ pour détecter la marque selon la page
+
+  // Détection automatique de la marque selon le chemin
+  let brand = "Sakura";
+  if (location.pathname.includes("zara")) brand = "Zara";
+  else if (location.pathname.includes("rituals")) brand = "Rituals";
 
   const handleCheckout = async () => {
-    if (!customer.name || !customer.email || !customer.phone) {
-      toast.error("Veuillez renseigner votre nom, email et téléphone 📱");
+    const newErrors = {
+      name: customer.name.trim() === "",
+      email: customer.email.trim() === "",
+      phone: customer.phone.trim() === "",
+    };
+    setErrors(newErrors);
+
+    if (newErrors.name || newErrors.email || newErrors.phone) {
+      toast.error("Veuillez remplir tous les champs obligatoires 📱");
       return;
     }
 
     const message = createCartMessage(cart, customer.name, customer.phone, customer.email);
     const url = createWhatsAppUrl(message);
 
-    // ✅ Enregistrer la commande côté backend
     try {
       const res = await fetch(`${API}/api/orders`, {
         method: "POST",
@@ -39,6 +56,7 @@ export function Cart() {
             volume: item.selectedVolume,
             quantity: item.quantity,
             price: item.price,
+            brand, // ✅ marque ajoutée ici
           })),
           customerName: customer.name,
           customerEmail: customer.email,
@@ -50,8 +68,12 @@ export function Cart() {
 
       if (res.ok) {
         toast.success("Commande enregistrée ✅");
-        window.open(url, "_blank");
         clearCart();
+
+        // ✅ Redirection WhatsApp
+        setTimeout(() => {
+          window.location.href = url;
+        }, 800);
       } else {
         toast.error("Erreur lors de l’enregistrement de la commande ❌");
       }
@@ -172,21 +194,27 @@ export function Cart() {
               <input
                 type="text"
                 placeholder="Nom complet"
-                className="w-full border rounded-lg px-4 py-2 focus:border-teal-dark"
+                className={`w-full border rounded-lg px-4 py-2 focus:border-teal-dark ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                }`}
                 value={customer.name}
                 onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
               />
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full border rounded-lg px-4 py-2 focus:border-teal-dark"
+                className={`w-full border rounded-lg px-4 py-2 focus:border-teal-dark ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
                 value={customer.email}
                 onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
               />
               <input
                 type="tel"
                 placeholder="Téléphone"
-                className="w-full border rounded-lg px-4 py-2 focus:border-teal-dark"
+                className={`w-full border rounded-lg px-4 py-2 focus:border-teal-dark ${
+                  errors.phone ? "border-red-500" : "border-gray-300"
+                }`}
                 value={customer.phone}
                 onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
               />

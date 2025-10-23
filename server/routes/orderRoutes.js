@@ -18,10 +18,27 @@ const transporter = nodemailer.createTransport({
   tls: { ciphers: "SSLv3" },
 });
 
+// ===============================
 // 📦 Créer une commande (depuis le site)
+// ===============================
 router.post("/", async (req, res) => {
   try {
-    const order = new Order(req.body);
+    const { items, ...orderData } = req.body;
+
+    // 🔍 Détection automatique de la marque
+    const itemsWithBrand = items.map((i) => {
+      let brand = "Sakura";
+      const name = i.name?.toLowerCase() || "";
+      if (name.includes("zara")) brand = "Zara";
+      else if (name.includes("ritual")) brand = "Rituals";
+      return { ...i, brand };
+    });
+
+    const order = new Order({
+      ...orderData,
+      items: itemsWithBrand,
+    });
+
     await order.save();
     res.status(201).json(order);
   } catch (error) {
@@ -30,10 +47,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 📜 Lister toutes les commandes pour l’admin
+// ===============================
+// 📜 Lister toutes les commandes (avec option ?limit)
+// ===============================
 router.get("/", async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const limit = parseInt(req.query.limit) || 0;
+    const orders = await Order.find().sort({ createdAt: -1 }).limit(limit);
     res.json(orders);
   } catch (error) {
     console.error("Erreur chargement commandes :", error);
@@ -41,7 +61,9 @@ router.get("/", async (req, res) => {
   }
 });
 
+// ===============================
 // ✏️ Mettre à jour le statut et envoyer un mail
+// ===============================
 router.put("/:id/status", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -68,6 +90,7 @@ router.put("/:id/status", async (req, res) => {
       )
       .join("");
 
+    // 💌 Email design original intact
     const html =
       status === "Confirmée"
         ? `
@@ -106,13 +129,16 @@ router.put("/:id/status", async (req, res) => {
   }
 });
 
+// ===============================
 // ❌ Supprimer une commande
+// ===============================
 router.delete("/:id", async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
     res.json({ message: "Commande supprimée ✅" });
   } catch (error) {
-    res.status(500).json({ message: "Erreur suppression" });
+    console.error("Erreur suppression commande :", error);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 

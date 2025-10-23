@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Product } from "../types/product";
 import { ProductCard } from "./ProductCard";
 
@@ -8,11 +9,17 @@ interface ProductGridProps {
 
 export function ProductGrid({ products }: ProductGridProps) {
   const [filter, setFilter] = useState<string>("Tous");
+  const location = useLocation();
+
+  // 🌸 Déterminer la collection actuelle à partir de l'URL
+  let collectionPrefix = "/produit"; // par défaut : Sakura
+  if (location.pathname.includes("zara")) collectionPrefix = "/zara-produits";
+  if (location.pathname.includes("rituals")) collectionPrefix = "/rituals-produits";
 
   // 🔹 Extraire les genres uniques à partir du champ "notes"
   const genres = ["Tous", ...Array.from(new Set(products.map((p) => p.notes)))];
 
-  // 🔹 Filtrer les produits par genre
+  // 🔹 Filtrer les produits par genre (Homme / Femme / Unisexe)
   const filteredProducts =
     filter === "Tous"
       ? products
@@ -22,7 +29,7 @@ export function ProductGrid({ products }: ProductGridProps) {
 
   return (
     <div className="py-16">
-      {/* 🔹 Boutons de filtre */}
+      {/* 🔹 Filtres par genre */}
       <div className="flex flex-wrap justify-center gap-4 mb-12">
         {genres.map((genre) => (
           <button
@@ -43,7 +50,11 @@ export function ProductGrid({ products }: ProductGridProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard
+              key={product._id}
+              product={product}
+              link={`${collectionPrefix}/${product._id}`}
+            />
           ))
         ) : (
           <p className="text-center text-gray-500 col-span-full">
