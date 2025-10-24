@@ -6,7 +6,7 @@ export function Catalogue() {
     {
       name: "Sakura Parfums",
       description:
-        "L'essence de la délicatesse japonaise. Des fragrances florales et équilibrées, symbole d’élégance intemporelle.",
+        "Une sélection raffinée de parfums de marques emblématiques, choisies pour leur élégance, leur qualité et leur caractère unique. L’alliance parfaite entre luxe, douceur et modernité.",
       image: "/sakura-banner.jpg", // tu peux mettre tes vraies images
       link: "/catalogue-sakura" || "/catalogue", // fallback pour Sakura
       gradient: "from-rose-powder to-rose-300",
@@ -14,7 +14,7 @@ export function Catalogue() {
     {
       name: "Zara Parfums",
       description:
-        "Une collection moderne, audacieuse et accessible inspirée du style urbain et de la sophistication européenne.",
+        "Une collection moderne et accessible, inspirée du style urbain et de la féminité contemporaine. Des senteurs légères, fraîches et sophistiquées pour le quotidien.",
       image: "/zara-banner.jpg",
       link: "/catalogue-zara",
       gradient: "from-gold to-yellow-300",
@@ -22,8 +22,8 @@ export function Catalogue() {
     {
       name: "Rituals",
       description:
-        "Des senteurs apaisantes et harmonieuses pour transformer vos routines en moments de bien-être absolu.",
-      image: "/rituals-banner.jpg",
+        "Des fragrances apaisantes et sensorielles, inspirées des rituels de bien-être. Un voyage olfactif qui transforme les gestes du quotidien en moments de sérénité.",
+      image: "/rituals-banner.png",
       link: "/catalogue-rituals",
       gradient: "from-teal-600 to-teal-400",
     },
@@ -63,9 +63,6 @@ export function Catalogue() {
                   alt={c.name}
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
                 />
-                <div
-                  className={`absolute inset-0 bg-gradient-to-t ${c.gradient} opacity-40`}
-                ></div>
               </div>
 
               {/* Contenu */}

@@ -12,7 +12,7 @@ export function AdminRituals() {
     type: "",
     notes: "",
   });
-  const [prices, setPrices] = useState([{ size: "S", amount: 0 }]);
+  const [prices, setPrices] = useState([{ size: "", amount: 0 }]);
   const [images, setImages] = useState<File[]>([]);
 
   const fetchProducts = async () => {
@@ -43,7 +43,7 @@ export function AdminRituals() {
       toast.success("Produit Rituals ajouté !");
       fetchProducts();
       setForm({ name: "", description: "", type: "", notes: "" });
-      setPrices([{ size: "S", amount: 0 }]);
+      setPrices([{ size: "", amount: 0 }]);
       setImages([]);
     } catch {
       toast.error("Erreur lors de l’ajout du produit Rituals");
@@ -68,7 +68,9 @@ export function AdminRituals() {
   return (
     <DashboardLayout onLogout={() => localStorage.removeItem("adminToken")}>
       <div>
-        <h1 className="text-3xl font-serif text-pink-600 mb-6">🪷 Gestion des Parfums Rituals</h1>
+        <h1 className="text-3xl font-serif text-pink-600 mb-6">
+          🪷 Gestion des Produits Rituals
+        </h1>
 
         <form
           onSubmit={handleAdd}
@@ -105,23 +107,22 @@ export function AdminRituals() {
             className="border p-2 rounded"
           />
 
+          {/* 💰 Prix dynamiques */}
           <div className="border rounded p-3">
             <h3 className="font-semibold mb-2">Prix par taille</h3>
             {prices.map((p, i) => (
               <div key={i} className="flex gap-2 mb-2">
-                <select
+                <input
+                  type="text"
                   value={p.size}
                   onChange={(e) => {
                     const newPrices = [...prices];
                     newPrices[i].size = e.target.value;
                     setPrices(newPrices);
                   }}
+                  placeholder="Taille (ex: S ou 100ml)"
                   className="border p-2 rounded w-1/2"
-                >
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                </select>
+                />
                 <input
                   type="number"
                   value={p.amount}
@@ -130,14 +131,14 @@ export function AdminRituals() {
                     newPrices[i].amount = Number(e.target.value);
                     setPrices(newPrices);
                   }}
-                  className="border p-2 rounded w-1/2"
                   placeholder="Prix (MAD)"
+                  className="border p-2 rounded w-1/2"
                 />
               </div>
             ))}
             <button
               type="button"
-              onClick={() => setPrices([...prices, { size: "S", amount: 0 }])}
+              onClick={() => setPrices([...prices, { size: "", amount: 0 }])}
               className="text-pink-600 text-sm hover:underline"
             >
               + Ajouter une taille
@@ -160,6 +161,7 @@ export function AdminRituals() {
           </button>
         </form>
 
+        {/* 🧴 Liste produits */}
         {loading ? (
           <p className="text-gray-500 mt-6">Chargement...</p>
         ) : (
@@ -167,7 +169,7 @@ export function AdminRituals() {
             {products.map((p) => (
               <div
                 key={p._id}
-                className="bg-white rounded-xl shadow p-3 relative"
+                className="bg-white rounded-xl shadow p-3 relative hover:shadow-lg transition"
               >
                 <img
                   src={`${API}${p.images?.[0]}`}
@@ -178,8 +180,10 @@ export function AdminRituals() {
                   {p.name}
                 </h3>
                 <p className="text-sm text-gray-600">{p.type}</p>
-                <p className="text-gray-800 font-bold mt-2">
-                  {p.prices?.map((x: any) => `${x.size}: ${x.amount} MAD`).join(" / ")}
+                <p className="text-gray-800 font-bold mt-2 text-sm">
+                  {p.prices
+                    ?.map((x: any) => `${x.size}: ${x.amount} MAD`)
+                    .join(" / ")}
                 </p>
                 <button
                   onClick={() => handleDelete(p._id)}

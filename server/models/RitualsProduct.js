@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
 
-// 💫 Sous-schema pour les prix selon la taille (S, M, L)
+// 💫 Sous-schema flexible pour prix et taille (S, M, L, XL, 50ml, etc.)
 const priceSchema = new mongoose.Schema({
   size: {
     type: String,
-    required: true,
-    enum: ["S", "M", "L"], // uniquement S, M, L
+    required: true, // texte libre : "S", "M", "L", "100ml", etc.
+    trim: true,
   },
-  amount: { type: Number, required: true }, // ex: 150, 250, 350 MAD
+  amount: {
+    type: Number,
+    required: true, // prix en MAD
+    min: 0,
+  },
 });
 
 const ritualsProductSchema = new mongoose.Schema(
@@ -22,5 +26,4 @@ const ritualsProductSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🌸 Collection séparée pour Rituals
 export default mongoose.model("RitualsProduct", ritualsProductSchema);
