@@ -5,9 +5,7 @@ import path from "path";
 
 const router = express.Router();
 
-// ======================================================
-// 📦 CONFIGURATION MULTER POUR UPLOAD D'IMAGES
-// ======================================================
+// ⚙️ Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) =>
@@ -16,7 +14,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ======================================================
-// 🔹 GET — Tous les produits Rituals
+// 🔹 GET — Tous les produits
 // ======================================================
 router.get("/", async (req, res) => {
   try {
@@ -28,7 +26,7 @@ router.get("/", async (req, res) => {
 });
 
 // ======================================================
-// 🔹 GET — Un seul produit Rituals
+// 🔹 GET — Un produit
 // ======================================================
 router.get("/:id", async (req, res) => {
   try {
@@ -41,16 +39,11 @@ router.get("/:id", async (req, res) => {
 });
 
 // ======================================================
-// 🔹 POST — Ajouter un produit Rituals (avec images et tailles)
+// 🔹 POST — Ajouter
 // ======================================================
 router.post("/", upload.array("images"), async (req, res) => {
   try {
-    console.log("🧾 Body reçu Rituals:", req.body);
-
-    // 🔸 Parse les tailles/prix envoyés
     const prices = req.body.prices ? JSON.parse(req.body.prices) : [];
-
-    // 🔸 Crée les chemins des images uploadées
     const images = req.files.map((f) => `/uploads/${f.filename}`);
 
     const newProduct = new RitualsProduct({
@@ -71,22 +64,26 @@ router.post("/", upload.array("images"), async (req, res) => {
 });
 
 // ======================================================
-// 🔹 PUT — Modifier un produit Rituals
+// 🔹 PUT — Modifier (garde les images si non remplacées)
 // ======================================================
 router.put("/:id", upload.array("images"), async (req, res) => {
   try {
     const prices = req.body.prices ? JSON.parse(req.body.prices) : [];
-    const images = req.files.map((f) => `/uploads/${f.filename}`);
+    const updateData = {
+      name: req.body.name,
+      description: req.body.description,
+      type: req.body.type,
+      notes: req.body.notes,
+      prices,
+    };
 
-    const updated = await RitualsProduct.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...req.body,
-        prices,
-        $push: { images: { $each: images } },
-      },
-      { new: true }
-    );
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map((f) => `/uploads/${f.filename}`);
+    }
+
+    const updated = await RitualsProduct.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
 
     res.json(updated);
   } catch (err) {
@@ -96,7 +93,7 @@ router.put("/:id", upload.array("images"), async (req, res) => {
 });
 
 // ======================================================
-// 🔹 DELETE — Supprimer un produit Rituals
+// 🔹 DELETE — Supprimer
 // ======================================================
 router.delete("/:id", async (req, res) => {
   try {

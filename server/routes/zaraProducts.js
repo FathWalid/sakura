@@ -5,7 +5,7 @@ import path from "path";
 
 const router = express.Router();
 
-// 📦 Configuration Multer pour les uploads
+// ⚙️ Multer config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) =>
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
 });
 
 // ======================================================
-// 🔹 GET — Un seul produit par ID
+// 🔹 GET — Un seul produit
 // ======================================================
 router.get("/:id", async (req, res) => {
   try {
@@ -39,16 +39,11 @@ router.get("/:id", async (req, res) => {
 });
 
 // ======================================================
-// 🔹 POST — Ajouter un produit Zara (avec images)
+// 🔹 POST — Ajouter un produit
 // ======================================================
 router.post("/", upload.array("images"), async (req, res) => {
   try {
-    console.log("🧾 Body reçu :", req.body);
-
-    // Parse les prix envoyés en JSON
     const prices = req.body.prices ? JSON.parse(req.body.prices) : [];
-
-    // Sauvegarde les chemins des images
     const images = req.files.map((f) => `/uploads/${f.filename}`);
 
     const product = new ZaraProduct({
@@ -69,25 +64,31 @@ router.post("/", upload.array("images"), async (req, res) => {
 });
 
 // ======================================================
-// 🔹 PUT — Modifier un produit Zara
+// 🔹 PUT — Modifier un produit (garde anciennes images si non remplacées)
 // ======================================================
 router.put("/:id", upload.array("images"), async (req, res) => {
   try {
     const prices = req.body.prices ? JSON.parse(req.body.prices) : [];
-    const images = req.files.map((f) => `/uploads/${f.filename}`);
+    const updateData = {
+      name: req.body.name,
+      description: req.body.description,
+      type: req.body.type,
+      notes: req.body.notes,
+      prices,
+    };
 
-    const updated = await ZaraProduct.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...req.body,
-        prices,
-        $push: { images: { $each: images } },
-      },
-      { new: true }
-    );
+    // 🔹 Ne change les images que si de nouvelles sont uploadées
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map((f) => `/uploads/${f.filename}`);
+    }
+
+    const updated = await ZaraProduct.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
 
     res.json(updated);
   } catch (err) {
+    console.error("❌ Erreur mise à jour Zara:", err);
     res.status(400).json({ error: "Erreur lors de la mise à jour" });
   }
 });
