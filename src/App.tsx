@@ -28,7 +28,7 @@ import { AdminOrders } from "./pages/Admin/AdminOrders";
 import { AdminHome } from "./pages/Admin/AdminHome";
 import { AdminZara } from "./pages/Admin/AdminZara";
 import { AdminRituals } from "./pages/Admin/AdminRituals";
-import { AdminBanner } from "./pages/admin/AdminBanner";
+import { AdminBanner } from "./pages/Admin/AdminBanner";
 import { AdminDecants } from "./pages/Admin/AdminDecants"; // 💧 nouvelle page admin
 
 // ✅ Redirection automatique admin
