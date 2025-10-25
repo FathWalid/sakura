@@ -92,7 +92,6 @@ export function ProductForm({
     resetForm();
   };
 
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -125,13 +124,20 @@ export function ProductForm({
         placeholder="Type (ex: Eau de Parfum)"
         className="border p-2 rounded"
       />
-      <input
+
+      {/* 🌸 Sélecteur de genre */}
+      <select
         name="notes"
         value={form.notes}
         onChange={handleChange}
-        placeholder="Genre (Homme/Femme/Unisexe)"
         className="border p-2 rounded"
-      />
+        required
+      >
+        <option value="">-- Sélectionner le genre --</option>
+        <option value="Homme">Homme</option>
+        <option value="Femme">Femme</option>
+        <option value="Unisexe">Unisexe</option>
+      </select>
 
       {/* 💰 Prix dynamiques */}
       <div className="border rounded p-3">
