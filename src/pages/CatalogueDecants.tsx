@@ -4,7 +4,7 @@ import { ProductGrid } from "../components/ProductGrid";
 import { Product } from "../types/product";
 import { Link } from "react-router-dom";
 
-export function CatalogueRituals() {
+export function CatalogueDecants() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,8 +16,8 @@ export function CatalogueRituals() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`${API}/api/rituals-products`);
-        if (!res.ok) throw new Error("Erreur lors du chargement des produits Rituals");
+        const res = await fetch(`${API}/api/decants-products`);
+        if (!res.ok) throw new Error("Erreur lors du chargement des décants");
         const data = await res.json();
 
         const formatted = data.map((p: any) => {
@@ -41,7 +41,7 @@ export function CatalogueRituals() {
         setProducts(formatted);
       } catch (err: any) {
         console.error(err);
-        setError("Impossible de charger les produits Rituals pour le moment.");
+        setError("Impossible de charger les décants pour le moment.");
       } finally {
         setLoading(false);
       }
@@ -90,10 +90,10 @@ export function CatalogueRituals() {
           className="text-center mb-10"
         >
           <h1 className="text-5xl md:text-6xl font-serif text-teal-dark mb-4">
-            Collection Rituals
+            Collection Décants
           </h1>
           <p className="text-xl text-text-gray">
-            Des senteurs apaisantes inspirées du bien-être et de la sérénité.
+            Échantillons authentiques : testez, découvrez, voyagez.
           </p>
         </motion.div>
 
