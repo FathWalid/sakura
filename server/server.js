@@ -16,7 +16,8 @@ import contactRoutes from "./routes/contactRoutes.js";
 import zaraRoutes from "./routes/zaraProducts.js";
 import ritualsRoutes from "./routes/ritualsProducts.js";
 import adminStatsRoutes from "./routes/adminStatsRoutes.js";
-
+import bannerRoutes from "./routes/banners.js";
+import decantsRoutes from "./routes/decants-products.js";
 // 🌿 Initialisation environnement & serveur
 dotenv.config();
 connectDB();
@@ -65,6 +66,8 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/zara-products", zaraRoutes);
 app.use("/api/rituals-products", ritualsRoutes);
 app.use("/api/admin", adminStatsRoutes);
+app.use("/api/banners", bannerRoutes);
+app.use("/api/decants-products", decantsRoutes);
 
 // =====================================
 // 🖼️ Servir les fichiers d’images

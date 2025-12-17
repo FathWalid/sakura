@@ -27,14 +27,12 @@ const upload = multer({
 });
 
 // ================================
-// 📦 RÉCUPÉRER TOUS LES PRODUITS (avec option ?limit)
+// 📦 RÉCUPÉRER TOUS LES PRODUITS
 // ================================
 router.get("/", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 0;
-    const products = await Product.find()
-      .sort({ createdAt: -1 })
-      .limit(limit);
+    const products = await Product.find().sort({ createdAt: -1 }).limit(limit);
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors du chargement des produits" });
@@ -47,13 +45,10 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product)
-      return res.status(404).json({ message: "Produit introuvable" });
+    if (!product) return res.status(404).json({ message: "Produit introuvable" });
     res.json(product);
   } catch {
-    res.status(500).json({
-      message: "Erreur lors de la récupération du produit",
-    });
+    res.status(500).json({ message: "Erreur lors de la récupération du produit" });
   }
 });
 
@@ -105,15 +100,15 @@ router.put("/:id", protect, upload.array("images", 8), async (req, res) => {
       prices: parsedPrices,
     };
 
+    // 🔹 Si de nouvelles images sont envoyées, remplacer les anciennes
     if (req.files && req.files.length > 0) {
       updatedFields.images = req.files.map((f) => `/uploads/${f.filename}`);
     }
 
-    const updated = await Product.findByIdAndUpdate(
-      req.params.id,
-      updatedFields,
-      { new: true }
-    );
+    // Sinon, ne pas toucher aux anciennes images
+    const updated = await Product.findByIdAndUpdate(req.params.id, updatedFields, {
+      new: true,
+    });
 
     res.json(updated);
   } catch (error) {
@@ -128,10 +123,8 @@ router.put("/:id", protect, upload.array("images", 8), async (req, res) => {
 router.delete("/:id", protect, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product)
-      return res.status(404).json({ message: "Produit introuvable" });
+    if (!product) return res.status(404).json({ message: "Produit introuvable" });
 
-    // Supprimer les fichiers images associés
     if (product.images && product.images.length > 0) {
       product.images.forEach((img) => {
         const filePath = path.join(process.cwd(), img);

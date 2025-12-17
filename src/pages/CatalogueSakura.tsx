@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ProductGrid } from "../components/ProductGrid";
 import { Product } from "../types/product";
+import { Link } from "react-router-dom";
 
 export function CatalogueSakura() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("nouveaute");
   const API = import.meta.env.VITE_API_URL;
+
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -16,7 +21,6 @@ export function CatalogueSakura() {
         if (!res.ok) throw new Error("Erreur lors du chargement des produits Sakura");
         const data = await res.json();
 
-        // 🔹 Corrige les URL d’images et prix
         const formatted = data.map((p: any) => {
           const firstImage = p.images?.[0];
           let imageUrl = "/default-parfum.jpg";
@@ -31,34 +35,66 @@ export function CatalogueSakura() {
             ...p,
             image: imageUrl,
             price: p.prices?.[0]?.amount || 0,
+            createdAt: new Date(p.createdAt || Date.now()),
           };
         });
 
         setProducts(formatted);
       } catch (err: any) {
-        console.error("Erreur de chargement :", err);
+        console.error(err);
         setError("Impossible de charger les produits Sakura pour le moment.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
+
+  const sortedProducts = [...products].sort((a, b) => {
+    if (sort === "prix") return a.price - b.price;
+    if (sort === "top") return b.price - a.price;
+    if (sort === "nouveaute") return b.createdAt.getTime() - a.createdAt.getTime();
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+  const startIndex = (page - 1) * itemsPerPage;
+  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="min-h-screen bg-cream pt-32 pb-16">
       <div className="container mx-auto px-6">
+        <div className="mb-8 flex justify-between items-center">
+          <Link
+            to="/catalogue"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-teal-dark text-white hover:bg-teal-700 transition-all shadow-md"
+          >
+            ← Retour aux collections
+          </Link>
+
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+          >
+            <option value="nouveaute">🆕 Nouveautés</option>
+            <option value="prix">💰 Prix croissant</option>
+            <option value="top">⭐ Top ventes</option>
+          </select>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
-          <h1 className="text-5xl md:text-6xl font-serif text-teal-dark mb-6">
+          <h1 className="text-5xl md:text-6xl font-serif text-teal-dark mb-4">
             Collection Sakura Parfums
           </h1>
-          <p className="text-xl text-text-gray max-w-2xl mx-auto leading-relaxed">
-            Découvrez notre collection exclusive de parfums Sakura, créés pour sublimer chaque moment de votre vie.
+          <p className="text-xl text-text-gray">
+            Découvrez notre collection exclusive de parfums Sakura.
           </p>
         </motion.div>
 
@@ -66,13 +102,39 @@ export function CatalogueSakura() {
           <p className="text-center text-gray-500">Chargement des produits...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
-        ) : products.length === 0 ? (
-          <p className="text-center text-gray-500">
-            Aucun parfum Sakura disponible pour le moment.
-          </p>
+        ) : paginatedProducts.length === 0 ? (
+          <p className="text-center text-gray-500">Aucun produit disponible pour le moment.</p>
         ) : (
-          <ProductGrid products={products} />
+          <ProductGrid products={paginatedProducts} />
         )}
+
+        <div className="flex justify-center mt-10 gap-3">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className={`px-4 py-2 rounded-lg font-semibold ${
+              page === 1
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-teal-dark text-white hover:bg-teal-700"
+            }`}
+          >
+            ← Précédent
+          </button>
+          <span className="px-4 py-2 text-teal-dark font-medium">
+            Page {page} / {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className={`px-4 py-2 rounded-lg font-semibold ${
+              page === totalPages
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-teal-dark text-white hover:bg-teal-700"
+            }`}
+          >
+            Suivant →
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -27,7 +27,12 @@ export function AdminSidebar({ onLogout }: { onLogout: () => void }) {
           {link("/admin/products", "Sakura Parfums", "🧴")}
           {link("/admin/zara", "Zara Parfums", "👔")}
           {link("/admin/rituals", "Rituals Parfums", "🪷")}
+          {link("/admin/decants", "Décants Parfums", "💧")}
+
           {link("/admin/orders", "Commandes", "📦")}
+          
+          {/* 🖼️ Nouvelle section pour le panneau d’animation */}
+          {link("/admin/banners", "Bannières / Animations", "🎞️")}
         </nav>
       </div>
 

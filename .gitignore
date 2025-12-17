@@ -22,6 +22,7 @@ dist-ssr
 *.sw?
 uploads/
 .env
+
 *.log
 # OS
 .DS_Store

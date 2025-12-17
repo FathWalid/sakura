@@ -222,12 +222,6 @@ export function ProductDetails() {
               >
                 <ShoppingBag className="w-4 h-4" /> Ajouter au panier
               </button>
-              <button
-                onClick={handleWhatsApp}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg flex items-center justify-center gap-2"
-              >
-                💬 Commander via WhatsApp
-              </button>
             </div>
 
             {/* Retour */}

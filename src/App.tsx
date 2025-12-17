@@ -15,6 +15,7 @@ import { Catalogue } from "./pages/Catalogue";
 import { CatalogueSakura } from "./pages/CatalogueSakura";
 import { CatalogueZara } from "./pages/CatalogueZara";
 import { CatalogueRituals } from "./pages/CatalogueRituals";
+import { CatalogueDecants } from "./pages/CatalogueDecants"; // 💧 nouvelle catégorie
 import { Cart } from "./pages/Cart";
 import { Contact } from "./pages/Contact";
 import { ProductDetails } from "./pages/ProductDetail";
@@ -27,8 +28,10 @@ import { AdminOrders } from "./pages/Admin/AdminOrders";
 import { AdminHome } from "./pages/Admin/AdminHome";
 import { AdminZara } from "./pages/Admin/AdminZara";
 import { AdminRituals } from "./pages/Admin/AdminRituals";
+import { AdminBanner } from "./pages/Admin/AdminBanner";
+import { AdminDecants } from "./pages/Admin/AdminDecants"; // 💧 nouvelle page admin
 
-// ✅ Redirection de la racine admin selon connexion
+// ✅ Redirection automatique admin
 function AdminRoot() {
   const { token } = useContext(AdminAuthContext);
   return token ? (
@@ -114,6 +117,16 @@ function App() {
                 }
               />
               <Route
+                path="/catalogue-decants"
+                element={
+                  <>
+                    <Header />
+                    <CatalogueDecants />
+                    <Footer />
+                  </>
+                }
+              />
+              <Route
                 path="/panier"
                 element={
                   <>
@@ -133,9 +146,12 @@ function App() {
                   </>
                 }
               />
+
+              {/* 🔹 Détails produit pour chaque catégorie */}
               <Route path="/produit/:id" element={<ProductDetails />} />
               <Route path="/zara-produits/:id" element={<ProductDetails />} />
               <Route path="/rituals-produits/:id" element={<ProductDetails />} />
+              <Route path="/decants-produits/:id" element={<ProductDetails />} />
 
               {/* === 🧑‍💼 ADMIN === */}
               <Route path="/admin" element={<AdminRoot />} />
@@ -173,10 +189,26 @@ function App() {
                 }
               />
               <Route
+                path="/admin/decants"
+                element={
+                  <ProtectedRoute>
+                    <AdminDecants />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin/orders"
                 element={
                   <ProtectedRoute>
                     <AdminOrders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/banners"
+                element={
+                  <ProtectedRoute>
+                    <AdminBanner />
                   </ProtectedRoute>
                 }
               />
